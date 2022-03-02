@@ -43,11 +43,12 @@ static int getToken(){
 
         if(IdentifierStr == "def"){
             return token_def;
-        }else if(IdentifierStr == "extern"){
-            return token_extern;
-        }else{
-            return token_identifier;
         }
+        if(IdentifierStr == "extern"){
+            return token_extern;
+        }
+        
+        return token_identifier;
     }
 
     // Number: [0-9.]+
@@ -94,7 +95,7 @@ namespace{
 //ExprAST - Base class for all expression nodes.
 class ExprAST{
 public:
-    virtual ~ExprAST() {}
+    virtual ~ExprAST() = default;
 };
 
 //NumberExprAST - Expression class for numeric literals like "1.0".
@@ -185,7 +186,7 @@ static int GetTokenPrecedence(){
 
 //LogError* - These are little helper functions for error handling.
 std::unique_ptr<ExprAST> LogError(const char *Str){
-  fprintf(stderr, "LogError: %s\n", Str);
+  fprintf(stderr, "Error: %s\n", Str);
   return nullptr;
 }
 std::unique_ptr<PrototypeAST> LogErrorP(const char *Str){
@@ -204,15 +205,15 @@ static std::unique_ptr<ExprAST> ParseNumberExpr(){
 
 //parenexpr ::= '(' expression ')'
 static std::unique_ptr<ExprAST> ParseParenExpr(){
-    getNextToken();
+    getNextToken(); //eat '('
     auto V = ParseExpression();
     if(!V){
         return nullptr;
     }
     if(CurToken != ')'){
-        return LogError("expected ')");
+        return LogError("expected ')'");
     }
-    getNextToken();
+    getNextToken(); //eat ')'
     return V;
 }
 
@@ -369,7 +370,7 @@ static std::unique_ptr<PrototypeAST> ParseExtern(){
 -----------Top-Level Parsing----------
 */
 static void HandleDefinition(){
-    if(ParseTopLevelExpr()){
+    if(ParseDefinifion()){
         fprintf(stderr, "Parsed a function definition.\n");
     }else{
         //skip token for error recovery.

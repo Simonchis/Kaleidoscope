@@ -513,7 +513,7 @@ static void InitializeModule(){
 static void HandleDefinition(){
     if(auto FnAST = ParseDefinifion()){
         if(auto *FnIR = FnAST->codeGen()){
-            fprintf(stderr, "Parsed a function definition.\n");
+            fprintf(stderr, "Read function definition:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
         }
@@ -526,7 +526,7 @@ static void HandleDefinition(){
 static void HandleExtern(){
     if(auto ProtoAST = ParseExtern()){
         if(auto *FnIR = ProtoAST->codeGen()){
-            fprintf(stderr, "Parsed an extern.\n");
+            fprintf(stderr, "Read extern:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
         }
@@ -540,7 +540,7 @@ static void HandleTopLevelExpression(){
     // Evaluate a top-level expression into an anonymous function.
     if(auto FnAST =  ParseTopLevelExpr()){
         if(auto *FnIR = FnAST->codeGen()){
-           fprintf(stderr, "Parsed a top-level expr.\n");
+           fprintf(stderr, "Read top-level expression:");
            FnIR->print(errs());
            fprintf(stderr, "\n");
            //Remove the anonymous expression

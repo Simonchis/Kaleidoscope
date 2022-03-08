@@ -500,11 +500,23 @@ Function *FunctionAST::codeGen() {
 }
 
 /*
------------Top-Level Parsing----------
+-----------Top-Level Parsing and JIT Driver----------
 */
+static void InitializeModule(){
+    //Open a new context and module.
+    TheContext = std::make_unique<LLVMContext>();
+    TheModule = std::make_unique<Module>("My JIT", *TheContext);
+    //Create a new builder for the module.
+    Builder = std::make_unique<IRBuilder<>>(*TheContext);
+}
+
 static void HandleDefinition(){
-    if(ParseDefinifion()){
-        fprintf(stderr, "Parsed a function definition.\n");
+    if(auto FnAST = ParseDefinifion()){
+        if(auto *FnIR = FnAST->codeGen()){
+            fprintf(stderr, "Parsed a function definition.\n");
+            FnIR->print(errs());
+            fprintf(stderr, "\n");
+        }
     }else{
         //skip token for error recovery.
         getNextToken();
@@ -512,8 +524,12 @@ static void HandleDefinition(){
 }
 
 static void HandleExtern(){
-    if(ParseExtern()){
-        fprintf(stderr, "Parsed an extern.\n");
+    if(auto ProtoAST = ParseExtern()){
+        if(auto *FnIR = ProtoAST->codeGen()){
+            fprintf(stderr, "Parsed an extern.\n");
+            FnIR->print(errs());
+            fprintf(stderr, "\n");
+        }
     }else{
         //skip token for error recovery.
         getNextToken();
@@ -522,8 +538,14 @@ static void HandleExtern(){
 
 static void HandleTopLevelExpression(){
     // Evaluate a top-level expression into an anonymous function.
-    if(ParseTopLevelExpr()){
-        fprintf(stderr, "Parsed a top-level expr.\n");
+    if(auto FnAST =  ParseTopLevelExpr()){
+        if(auto *FnIR = FnAST->codeGen()){
+           fprintf(stderr, "Parsed a top-level expr.\n");
+           FnIR->print(errs());
+           fprintf(stderr, "\n");
+           //Remove the anonymous expression
+           FnIR->eraseFromParent();
+        }
     }else{
         //skip token for error recovery.
         getNextToken();
@@ -558,6 +580,9 @@ int main(){
     //Prime the first token.
     fprintf(stderr, "ready> ");
     getNextToken();
+
+    //Make the module, which holds all the code.
+    InitializeModule();
 
     // Run the main "interpreter loop" now.
     MainLoop();

@@ -480,11 +480,11 @@ Function *FunctionAST::codeGen() {
 
     // Record the function arguments in the NamedValues map.
     NamedValues.clear();
-    for (auto &Arg : TheFunction->args()){
+    for(auto &Arg : TheFunction->args()){
         NamedValues[std::string(Arg.getName())] = &Arg;
     }
 
-    if (Value *RetVal = Body->codeGen()){
+    if(Value *RetVal = Body->codeGen()){
         // Finish off the function.
         Builder->CreateRet(RetVal);
 

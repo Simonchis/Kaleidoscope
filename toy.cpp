@@ -570,6 +570,7 @@ static void MainLoop(){
 -----------Main driver code----------
 */
 int main(){
+    
     //Install standard binary operators.
     //1 is lowest presedence.
     BinOpPrecedence['<'] = 10;
